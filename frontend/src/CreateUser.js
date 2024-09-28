@@ -50,7 +50,7 @@ const CreateUser = () => {
 
     const Submit = (e) => {
         e.preventDefault();
-        if (!name) {
+        if (!name.trim() || !/^[A-Za-z\s]+$/.test(name)) {
             setNameError("Name field is required.");
             return;
         }
