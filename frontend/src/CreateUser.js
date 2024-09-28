@@ -11,6 +11,7 @@ const CreateUser = () => {
     const [emailError, setEmailError] = useState("");
     const [ageError, setAgeError] = useState("");
     const navigate = useNavigate();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleNameChange = (e) => {
         const value = e.target.value;
@@ -38,7 +39,7 @@ const CreateUser = () => {
     const handleAgeChange = (e) => {
         const value = e.target.value;
         // Check if the value is a number and at least 1
-        const isValidAge = /^[1-9]\d*$/.test(value);
+        const isValidAge = /^(1[0-9]{0,2}|[1-9][0-9]{0,2})$/.test(value);
         if (isValidAge || value === "") {
             setAge(value);
             setAgeError(""); // Clear error message if input is valid
@@ -61,16 +62,19 @@ const CreateUser = () => {
         }
 
         // Check if the age is valid before submission
-        if (!age || age < 1) {
-            setAgeError("Age must be 1 or above.");
+        if (!age || age < 1 || age > 150) {
+            setAgeError("Age must be 1 or above and not exceed 150.");
             return;
         }
+
+        setIsSubmitting(true);
+
         axios.post("https://merncrudbackend-1zpv.onrender.com/createUser", { name, email, age })
             .then(result => {
                 console.log(result);
                 navigate('/')
             })
-            .catch(err => console.log(err));
+            .catch(err => { console.log(err); setIsSubmitting(false); });
     }
 
     return (
@@ -107,7 +111,7 @@ const CreateUser = () => {
                             required />
                         {ageError && <div className="invalid-feedback">{ageError}</div>} {/* Display age error message */}
                     </div>
-                    <button type="submit" className="btn btn-success">Submit</button>
+                    <button type="submit" className="btn btn-success" disabled={isSubmitting}> {isSubmitting ? 'Submitting...' : 'Submit'} {/* Show different text based on submission status */}</button>
                 </form>
             </div>
         </div>

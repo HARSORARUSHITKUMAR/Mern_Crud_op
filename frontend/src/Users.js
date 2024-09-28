@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 const Users = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    
 
     useEffect(() => {
         setLoading(true);
@@ -13,12 +14,17 @@ const Users = () => {
                 setUsers(result.data);
                 setLoading(false);
             })
-            .catch(err => { console.log(err); setLoading(false); })
+            .catch(err => { 
+                console.log(err); 
+                setLoading(false); 
+            })
     }, [])
 
     const handleDelete = (id) => {
         axios.delete('https://merncrudbackend-1zpv.onrender.com/deleteUser/' + id)
-            .then(res => { window.location.reload() })
+            .then(res => {
+                // Update the users state to remove the deleted user
+                setUsers(users.filter(user => user._id !== id)); })
             .catch(err => console.log(err))
     }
 
@@ -33,6 +39,11 @@ const Users = () => {
                         </div>
                     </div>
                 ) : (
+                    users.length === 0 ? (
+                        <div className="text-center">
+                            <h3>No records found</h3>
+                        </div>
+                    ) : 
                     <table className="table">
                         <thead>
                             <tr>
@@ -60,7 +71,7 @@ const Users = () => {
                                         </td>
                                     </tr>
                                 }))
-                        }
+                            }
                         </tbody>
                     </table>
                 )}
