@@ -7,23 +7,64 @@ const CreateUser = () => {
     const [name, setName] = useState();
     const [email, setEmail] = useState();
     const [age, setAge] = useState();
-    const [error, setError] = useState("");
+    const [nameError, setNameError] = useState("");
+    const [emailError, setEmailError] = useState("");
+    const [ageError, setAgeError] = useState("");
     const navigate = useNavigate();
 
     const handleNameChange = (e) => {
         const value = e.target.value;
-        // Check if the value contains only letters (a-z, A-Z)
         const isValidName = /^[A-Za-z\s]*$/.test(value);
         if (isValidName || value === "") {
             setName(value);
-            setError(""); // Clear error message if input is valid
+            setNameError(""); // Clear error message if input is valid
         } else {
-            setError("Please enter a valid name (letters only).");
+            setNameError("Please enter a valid name (letters only).");
         }
     };
 
+    const handleEmailChange = (e) => {
+        const value = e.target.value;
+        // Check if the first character is a letter and the rest can be alphanumeric
+        const isValidEmail = /^[A-Za-z][A-Za-z0-9]*@([A-Za-z]+\.)+[A-Za-z]{2,}$/.test(value);
+        if (isValidEmail || value === "") {
+            setEmail(value);
+            setEmailError(""); // show the error message if input is valid
+        } else {
+            setEmailError("Please enter a valid email (first character must be a letter).");
+        }
+    };
+
+    const handleAgeChange = (e) => {
+        const value = e.target.value;
+        // Check if the value is a number and at least 1
+        const isValidAge = /^[1-9]\d*$/.test(value);
+        if (isValidAge || value === "") {
+            setAge(value);
+            setAgeError(""); // Clear error message if input is valid
+        } else {
+            setAgeError("Please enter a valid age (1 or above).");
+        }
+    };
+
+
     const Submit = (e) => {
         e.preventDefault();
+        if (!name) {
+            setNameError("Name field is required.");
+            return;
+        }
+
+        if (!email) {
+            setEmailError("Email field is required.");
+            return;
+        }
+
+        // Check if the age is valid before submission
+        if (!age || age < 1) {
+            setAgeError("Age must be 1 or above.");
+            return;
+        }
         axios.post("https://merncrudbackend-1zpv.onrender.com/createUser", { name, email, age })
             .then(result => {
                 console.log(result);
@@ -39,20 +80,32 @@ const CreateUser = () => {
                     <h2>Add User</h2>
                     <div className="mb-3">
                         <label htmlFor="name">Name</label>
-                        <input type="text" className={`form-control ${error ? 'is-invalid' : ''}`} placeholder="Enter Your Name"
+                        <input type="text" className={`form-control ${nameError ? 'is-invalid' : ''}`} placeholder="Enter Your Name"
                             onChange={handleNameChange} value={name} required />
-                        {error && <div className="invalid-feedback">{error}</div>} {/* Display error message */}
+                        {nameError && <div className="invalid-feedback">{nameError}</div>} {/* Display name error message */}
                     </div>
                     <div className="mb-3">
                         <label htmlFor="email">Email</label>
-                        <input type="email" className="form-control" placeholder="Enter Your Email"
-                            onChange={(e) => setEmail(e.target.value)} required
+                        <input
+                            type="email"
+                            className={`form-control ${emailError ? 'is-invalid' : ''}`}
+                            placeholder="Enter Your Email"
+                            onChange={handleEmailChange}
+                            value={email}
+                            required
                         />
+                        {emailError && <div className="invalid-feedback">{emailError}</div>} {/* Display email error message */}
                     </div>
                     <div className="mb-3">
                         <label htmlFor="age">Age</label>
-                        <input type="text" className="form-control" placeholder="Enter Your Age"
-                            onChange={(e) => setAge(e.target.value)} required />
+                        <input
+                            type="text"
+                            className={`form-control ${ageError ? 'is-invalid' : ''}`}
+                            placeholder="Enter Your Age"
+                            onChange={handleAgeChange}
+                            value={age}
+                            required />
+                        {ageError && <div className="invalid-feedback">{ageError}</div>} {/* Display age error message */}
                     </div>
                     <button type="submit" className="btn btn-success">Submit</button>
                 </form>
