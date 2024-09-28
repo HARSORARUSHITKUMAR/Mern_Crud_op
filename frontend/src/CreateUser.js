@@ -13,7 +13,7 @@ const CreateUser = () => {
 
     const Submit = (e) => {
         e.preventDefault();
-        axios.post("http://localhost:3001/createUser",{name,email,age})
+        axios.post("https://merncrudbackend-1zpv.onrender.com/createUser",{name,email,age})
         .then(result => {
             console.log(result);
             navigate('/')
@@ -23,24 +23,24 @@ const CreateUser = () => {
 
     return (
         <div className="d-flex vh-100 bg-primary justify-content-center align-items-center">
-            <div className="w-50 bg-white rounded p-3">
+            <div className="col-10 col-md-6 col-lg-4 bg-white rounded p-3">
                 <form onSubmit={Submit}>
                     <h2>Add User</h2>
                     <div className="mb-3">
                         <label htmlFor="name">Name</label>
                         <input type="text" className="form-control" placeholder="Enter Your Name"
-                        onChange={(e) => setName(e.target.value)} />
+                        onChange={(e) => setName(e.target.value)} required />
                     </div>
                     <div className="mb-3">
                         <label htmlFor="email">Email</label>
                         <input type="email" className="form-control" placeholder="Enter Your Email" 
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={(e) => setEmail(e.target.value)} required
                         />
                     </div>
                     <div className="mb-3">
                         <label htmlFor="age">Age</label>
                         <input type="text" className="form-control" placeholder="Enter Your Age"
-                        onChange={(e) => setAge(e.target.value)} />
+                        onChange={(e) => setAge(e.target.value)} required />
                     </div>
                     <button type="submit" className="btn btn-success">Submit</button>
                 </form>

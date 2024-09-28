@@ -11,18 +11,18 @@ const UpdateUser = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        axios.get('http://localhost:3001/getUser/' + id)
+        axios.get('https://merncrudbackend-1zpv.onrender.com/getUser/' + id)
             .then(result => {
                 setName(result.data.name)
                 setEmail(result.data.email)
                 setAge(result.data.age)
             })
             .catch(err => console.log(err))
-    },[])
+    },[id])
 
     const Update = (e) => {
         e.preventDefault();
-        axios.put("http://localhost:3001/updateUser/" + id,{name,email,age})
+        axios.put("https://merncrudbackend-1zpv.onrender.com/updateUser/" + id,{name,email,age})
         .then(result => {
             console.log(result);
             navigate('/')

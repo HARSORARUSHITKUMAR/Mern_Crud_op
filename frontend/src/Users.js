@@ -4,15 +4,20 @@ import { Link } from "react-router-dom";
 
 const Users = () => {
     const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        axios.get('http://localhost:3001')
-            .then(result => setUsers(result.data))
-            .catch(err => console.log(err))
+        setLoading(true);
+        axios.get('https://merncrudbackend-1zpv.onrender.com')
+            .then(result => {
+                setUsers(result.data);
+                setLoading(false);
+            })
+            .catch(err => { console.log(err); setLoading(false); })
     }, [])
 
     const handleDelete = (id) => {
-        axios.delete('http://localhost:3001/deleteUser/' + id)
+        axios.delete('https://merncrudbackend-1zpv.onrender.com/deleteUser/' + id)
             .then(res => { window.location.reload() })
             .catch(err => console.log(err))
     }
@@ -21,37 +26,44 @@ const Users = () => {
         <div className="d-flex vh-100 bg-primary justify-content-center align-items-center">
             <div className="w-50 bg-white rounded p-3">
                 <Link to="/create" className="btn btn-success">Add +</Link>
-                <table className="table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Age</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {
-                            users.map((user => {
-                                return <tr>
-                                    <td>{user.name}</td>
-                                    <td>{user.email}</td>
-                                    <td>{user.age}</td>
-                                    <td>
-                                        <Link to={`/update/${user._id}`} className="btn btn-success">Update</Link>
+                {loading ? (
+                    <div className="text-center">
+                        <div className="spinner-border" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                ) : (
+                    <table className="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Age</th>
+                                <th style={{ textAlign: "center" }}>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {
+                                users.map((user => {
+                                    return <tr key={user._id}>
+                                        <td>{user.name}</td>
+                                        <td>{user.email}</td>
+                                        <td>{user.age}</td>
+                                        <td>
+                                            <Link to={`/update/${user._id}`} className="btn btn-success m-2">Update</Link>
+                                            <button
+                                                className="btn btn-danger"
+                                                onClick={(e) => handleDelete(user._id)}>
+                                                Delete
+                                            </button>
 
-                                        <button
-                                            className="btn btn-danger"
-                                            onClick={(e) => handleDelete(user._id)}>
-                                            Danger
-                                        </button>
-
-                                    </td>
-                                </tr>
-                            }))
+                                        </td>
+                                    </tr>
+                                }))
                         }
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                )}
             </div>
         </div>
     );
