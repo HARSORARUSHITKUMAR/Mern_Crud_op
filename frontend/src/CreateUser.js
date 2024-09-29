@@ -63,7 +63,7 @@ const CreateUser = () => {
 
         // Check if the age is valid before submission
         if (!age || age < 1 || age > 150) {
-            setAgeError("Age must be 1 or above and not exceed 150.");
+            setAgeError("Age must be between 1 and 150.");
             return;
         }
 

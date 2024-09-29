@@ -5,19 +5,29 @@ import { Link } from "react-router-dom";
 const Users = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [timeout, setTimeout] = useState(false);
     
 
     useEffect(() => {
         setLoading(true);
+        setTimeout(false);
+
+        const timeout = setTimeout(() => {
+            setLoading(false); // Stop loading after 5 seconds
+            setTimeout(true); // Indicate that the timeout was reached
+        },500);
         axios.get('https://merncrudbackend-1zpv.onrender.com')
             .then(result => {
+                clearTimeout(timeout);
                 setUsers(result.data);
                 setLoading(false);
             })
             .catch(err => { 
+                clearTimeout(timeout);
                 console.log(err); 
                 setLoading(false); 
             })
+            return () => clearTimeout(timeout);
     }, [])
 
     const handleDelete = (id) => {
@@ -39,11 +49,11 @@ const Users = () => {
                         </div>
                     </div>
                 ) : (
-                    users.length === 0 ? (
+                    users.length === 0 && timeout ? (
                         <div className="text-center">
                             <h3>No records found</h3>
                         </div>
-                    ) : 
+                    ) : users.length > 0 ? ( 
                     <table className="table">
                         <thead>
                             <tr>
@@ -74,6 +84,7 @@ const Users = () => {
                             }
                         </tbody>
                     </table>
+                    ):null
                 )}
             </div>
         </div>
