@@ -6,8 +6,9 @@ const UpdateUser = () => {
 
     const { id } = useParams("");
     const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
+    const [email, setEmail] = useState();
     const [age, setAge] = useState("");
+    const [ageError, setAgeError] = useState("");
     const [error, setError] = useState("");
     const navigate = useNavigate();
 
@@ -26,13 +27,31 @@ const UpdateUser = () => {
         // contains at least one space between two words, and no leading space.
         return /^[A-Za-z]+(\s[A-Za-z]+)*$/.test(name.trim()) && name.trim().length > 0;
     };
+    
+
     const isValidEmail = (email) => {
-        //  Must start with a letter, followed by standard email format
-        const trimmedEmail = email.trim();  // Always trim leading/trailing spaces
-        return /^[A-Za-z][A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(trimmedEmail);
-    };
+        const trimmedEmail = email.trim();
+        // Regex to allow only emails ending with gmail.com or email.com
+        const emailPattern = /^[A-Za-z0-9._%+-]+@(gmail\.com|email\.com)$/;
+        // console.log("Validating email:", trimmedEmail); 
+        return emailPattern.test(trimmedEmail);
+      };
+
+    
     const isValidAge = (age) => {
-        return !isNaN(age) && age > 0;
+        return !isNaN(age) && age >= 1 && age <= 150;
+    };
+
+    const handleAgeChange = (e) => {
+        const value = e.target.value;
+        // Check if the value is a number and at least 1
+        const isValidAge = /^(1[0-9]{0,2}|[1-9][0-9]{0,2})$/.test(value);
+        if ((isValidAge >= 1 && isValidAge <= 150) || value === "") {
+            setAge(value);
+            setAgeError(""); // Clear error message if input is valid
+        } else {
+            setAgeError("Age must be between 1 and 150.");
+        }
     };
 
     const Update = (e) => {
@@ -43,17 +62,20 @@ const UpdateUser = () => {
      
          if (!isValidName(trimmedName)) {
             setError("Name must consist of at least character cannot be a blank.");
-            console.log("Validation failed.");
+            // console.log("Validation failed.");
             return;
         }
+        
         if (!isValidEmail(trimmedEmail)) {
             setError("Please enter a valid email.");
-            console.log("Validation failed: Email");
+            // console.log("Invalid email:", trimmedEmail);
             return;
-        }
+          }
+        // console.log("the email validation:",isValidEmail);
+
         if (!isValidAge(age)) {
-            setError("Age must be a valid number greater than 0.");
-            console.log("Validation failed: Age");
+            setAgeError("Age must be between 1 and 150.");
+            // console.log("Validation failed: Age");
             return;
         }
         
@@ -70,12 +92,8 @@ const UpdateUser = () => {
             navigate('/')
         })
         .catch(err => console.log(err));
-        // console.error("Error updating user:");
+        // console.error("Error updating user:",err);
     }
-
-    // const isValidInput = (value) => {
-    //     return typeof value === "string" && value.trim().length > 0;
-    // };
 
     return (
         <div className="d-flex vh-100 bg-primary justify-content-center align-items-center">
@@ -104,16 +122,19 @@ const UpdateUser = () => {
                         />
                     </div>
                     <div className="mb-3">
-                        <label htmlFor="age">Age :</label>
+                        <label htmlFor="age">Age</label>
                         <input
                             type="text"
-                            className="form-control"
+                            className={`form-control ${ageError ? 'is-invalid' : ''}`}
                             placeholder="Enter Your Age"
                             value={age}
-                            onChange={(e) => setAge(e.target.value)}
+                            onChange={handleAgeChange}
+                            required
                         />
+                        {ageError && <div className="invalid-feedback">{ageError}</div>} {/* Display age error message */}
+
                     </div>
-                    <button className="btn btn-success">Update</button>
+                    <button className="btn btn-success" >Update</button>
                 </form>
             </div>
         </div>

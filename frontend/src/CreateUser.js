@@ -4,9 +4,9 @@ import { useNavigate } from "react-router-dom";
 
 const CreateUser = () => {
 
-    const [name, setName] = useState();
-    const [email, setEmail] = useState();
-    const [age, setAge] = useState();
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [age, setAge] = useState("");
     const [nameError, setNameError] = useState("");
     const [emailError, setEmailError] = useState("");
     const [ageError, setAgeError] = useState("");
@@ -20,16 +20,17 @@ const CreateUser = () => {
             setName(value);
             setNameError(""); // Clear error message if input is valid
         } else {
-            setNameError("Please enter a valid name (letters only).");
+            setNameError("Please enter a valid name.");
         }
     };
 
     const handleEmailChange = (e) => {
         const value = e.target.value;
+        setEmail(value);
         // Check if the first character is a letter and the rest can be alphanumeric
-        const isValidEmail = /^[A-Za-z][A-Za-z0-9]*@([A-Za-z]+\.)+[A-Za-z]{2,}$/.test(value);
+        const isValidEmail = /^[A-Za-z][A-Za-z0-9]*@(gmail\.com|email\.com)$/.test(value);
         if (isValidEmail || value === "") {
-            setEmail(value);
+            // setEmail(value);
             setEmailError(""); // show the error message if input is valid
         } else {
             setEmailError("Please enter a valid email (first character must be a letter).");
@@ -40,32 +41,43 @@ const CreateUser = () => {
         const value = e.target.value;
         // Check if the value is a number and at least 1
         const isValidAge = /^(1[0-9]{0,2}|[1-9][0-9]{0,2})$/.test(value);
-        if (isValidAge || value === "") {
+        if ((isValidAge >= 1 && isValidAge <= 150) || value === "") {
             setAge(value);
             setAgeError(""); // Clear error message if input is valid
         } else {
-            setAgeError("Please enter a valid age (1 or above).");
+            setAgeError("Age must be between 1 and 150.");
         }
     };
 
 
     const Submit = (e) => {
         e.preventDefault();
+
+        let isValid = true;
+
         if (!name.trim() || !/^[A-Za-z\s]+$/.test(name)) {
             setNameError("Name field is required.");
-            return;
+            // return;
+            isValid = false;
         }
 
         if (!email) {
             setEmailError("Email field is required.");
-            return;
+            // return;
+            isValid = false;
+        } else if (!/^[A-Za-z][A-Za-z0-9]*@(gmail\.com|email\.com)$/.test(email)) {
+            setEmailError("Please enter a valid email.");
+            isValid = false;
         }
 
         // Check if the age is valid before submission
         if (!age || age < 1 || age > 150) {
             setAgeError("Age must be between 1 and 150.");
-            return;
+            // return;
+            isValid = false;
         }
+
+        if (!isValid) return;
 
         setIsSubmitting(true);
 
@@ -74,7 +86,10 @@ const CreateUser = () => {
                 console.log(result);
                 navigate('/')
             })
-            .catch(err => { console.log(err); setIsSubmitting(false); });
+            .catch(err => { 
+                console.log(err); 
+                setIsSubmitting(false); 
+            });
     }
 
     return (
@@ -111,7 +126,12 @@ const CreateUser = () => {
                             required />
                         {ageError && <div className="invalid-feedback">{ageError}</div>} {/* Display age error message */}
                     </div>
-                    <button type="submit" className="btn btn-success" disabled={isSubmitting}> {isSubmitting ? 'Submitting...' : 'Submit'} {/* Show different text based on submission status */}</button>
+                    <button
+                        type="submit"
+                        className="btn btn-success"
+                        disabled={isSubmitting}>
+                        {isSubmitting ? 'Submitting...' : 'Submit'} {/* Show different text based on submission status */}
+                    </button>
                 </form>
             </div>
         </div>
