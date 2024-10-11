@@ -1,57 +1,230 @@
-require('dotenv').config();
+// require('dotenv').config();  // Load environment variables from .env
+// const express = require('express');
+// const mongoose = require('mongoose');
+// const cors = require('cors');
+// const UserModel = require('./models/Users');
+
+// const app = express();
+
+// // Middleware
+// app.use(cors());
+// app.use(express.json());
+
+// // Connect to MongoDB using mongoose
+// mongoose.connect(process.env.mongoURI, {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true
+// })
+// .then(() => console.log('Connected to MongoDB'))
+// .catch((err) => console.error('MongoDB connection error:', err));
+
+
+// // Import CSV-related routes
+// const exportCsvRoutes = require('./routes/exportCsv'); // Adjust the path if needed
+// const importCsvRoutes = require('./routes/importCsv'); // Adjust the path if needed
+
+// // Use the imported routes
+// app.use('/api', exportCsvRoutes); // Route for exporting CSV
+// app.use('/api', importCsvRoutes); // Route for importing CSV
+
+
+// // Route to get all users
+// app.get('/', (req, res) => {
+//     UserModel.find({})
+//         .then(users => res.json(users))
+//         .catch(err => res.status().json(err));
+// });
+
+// // Route to get a user by ID
+// app.get('/getUser/:id', (req, res) => {
+//     const id = req.params.id;
+//     UserModel.findById(id)
+//         .then(user => res.json(user))
+//         .catch(err => res.status(500).json(err));
+// });
+
+// // Route to update a user by ID
+// app.put('/updateUser/:id', (req, res) => {
+//     const id = req.params.id;
+//     const { name, email, age } = req.body;
+//     UserModel.findByIdAndUpdate(id, { name, email, age }, { new: true })
+//         .then(updatedUser => res.json(updatedUser))
+//         .catch(err => res.status(500).json(err));
+// });
+
+// // Route to delete a user by ID
+// app.delete('/deleteUser/:id', (req, res) => {
+//     const id = req.params.id;
+//     UserModel.findByIdAndDelete(id)
+//         .then(deletedUser => res.json(deletedUser))
+//         .catch(err => res.status(500).json(err));
+// });
+
+// // Route to create a new user
+// app.post('/createUser', (req, res) => {
+//     UserModel.create(req.body)
+//         .then(newUser => res.json(newUser))
+//         .catch(err => res.status(500).json(err));
+// });
+
+// // Start the server
+// const PORT = process.env.PORT || 3001;
+// app.listen(PORT, () => {
+//     console.log(`Server is running on port ${PORT}`);
+// });
+
+require('dotenv').config();  // Load environment variables from .env
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const UserModel = require('./models/Users');
+const multer = require('multer');
+const csvParser = require('csv-parser');
+const fs = require('fs');
+const xlsx = require('xlsx');
+const { createObjectCsvWriter } = require('csv-writer');
+const path = require('path');
 
-const app = express()
-app.use(cors())
-app.use(express.json())
+// Initialize the app
+const app = express();
 
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Multer setup for file uploads
+const upload = multer({ dest: 'uploads/' });
+
+// MongoDB User model definition
+const userSchema = new mongoose.Schema({
+    name: String,
+    email: String,
+    age: Number,
+});
+
+const UserModel = mongoose.model('User', userSchema);
+
+// Connect to MongoDB
 mongoose.connect(process.env.mongoURI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
-});
+})
+.then(() => console.log('Connected to MongoDB'))
+.catch((err) => console.error('MongoDB connection error:', err));
 
+// Route to get all users
 app.get('/', (req, res) => {
     UserModel.find({})
         .then(users => res.json(users))
-        .catch(err => res.json(err))
+        .catch(err => res.status(500).json(err));
 });
 
-app.get('/getUser/:id', (req, res) => {
-    const id = req.params.id;
-    UserModel.findById({ _id: id })
-        .then(users => res.json(users))
-        .catch(err => res.json(err))
+// Route to create a new user
+app.post('/createUser', (req, res) => {
+    UserModel.create(req.body)
+        .then(newUser => res.json(newUser))
+        .catch(err => res.status(500).json(err));
 });
 
+// Route to update a user by ID
 app.put('/updateUser/:id', (req, res) => {
     const id = req.params.id;
-    UserModel.findByIdAndUpdate({ _id: id }, {
-        name: req.body.name,
-        email: req.body.email,
-        age: req.body.age
-    })
-        .then(users => res.json(users))
-        .catch(err => res.json(err))
+    const { name, email, age } = req.body;
+    UserModel.findByIdAndUpdate(id, { name, email, age }, { new: true })
+        .then(updatedUser => res.json(updatedUser))
+        .catch(err => res.status(500).json(err));
 });
 
+// Route to delete a user by ID
 app.delete('/deleteUser/:id', (req, res) => {
     const id = req.params.id;
-    UserModel.findByIdAndDelete({_id:id})
-    .then(users => res.json(users))
-    .catch(err => res.json(err))
+    UserModel.findByIdAndDelete(id)
+        .then(deletedUser => res.json(deletedUser))
+        .catch(err => res.status(500).json(err));
 });
 
-app.post("/createUser", (req, res) => {
-    UserModel.create(req.body)
-        .then(users => res.json(users))
-        .catch(err => res.json(err))
+// Route to export users as CSV
+app.get('/api/exportUsers', async (req, res) => {
+    try {
+        const users = await UserModel.find({});
+        if (!users || users.length === 0) {
+            return res.status(404).send('No users found');
+        }
+
+        const csvWriter = createObjectCsvWriter({
+            path: path.join(__dirname, 'users.csv'),
+            header: [
+                { id: 'name', title: 'Name' },
+                { id: 'email', title: 'Email' },
+                { id: 'age', title: 'Age' },
+            ],
+        });
+
+        await csvWriter.writeRecords(users);
+        res.download(path.join(__dirname, 'users.csv'), 'users.csv', (err) => {
+            if (err) {
+                console.error('Error downloading CSV:', err);
+                res.status(500).send('Error downloading CSV');
+            }
+            fs.unlink(path.join(__dirname, 'users.csv'), (err) => {
+                if (err) console.error('Error deleting file:', err);
+            });
+        });
+    } catch (error) {
+        console.error('Error generating CSV:', error);
+        res.status(500).send('Error generating CSV');
+    }
 });
 
+// Route to import users from CSV
+app.post('/api/importCsv', upload.single('file'), (req, res) => {
+    const results = [];
+
+    if (!req.file) {
+        return res.status(400).send('No file uploaded');
+    }
+
+    fs.createReadStream(req.file.path)
+        .pipe(csvParser())
+        .on('data', (data) => results.push(data))
+        .on('end', async () => {
+            try {
+                await UserModel.insertMany(results);
+                res.send('CSV data imported successfully');
+            } catch (error) {
+                console.error('Error importing CSV data:', error);
+                res.status(500).send('Error importing CSV data');
+            } finally {
+                fs.unlink(req.file.path, (err) => {
+                    if (err) console.error('Error deleting file:', err);
+                });
+            }
+        });
+});
+
+// Route to import users from an Excel file
+app.post('/api/importExcel', upload.single('file'), (req, res) => {
+    const workbook = xlsx.readFile(req.file.path);
+    const sheetName = workbook.SheetNames[0];
+    const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+    UserModel.insertMany(data)
+        .then(() => {
+            res.status(200).send('Users imported successfully from Excel');
+        })
+        .catch((error) => {
+            console.error('Error importing users from Excel:', error);
+            res.status(500).send('Error importing users from Excel');
+        })
+        .finally(() => {
+            fs.unlinkSync(req.file.path);
+        });
+});
+
+// Start the server
 const PORT = process.env.PORT || 3001;
-
 app.listen(PORT, () => {
-    console.log("Server Is Listening");
+    console.log(`Server is running on port ${PORT}`);
 });
+
+
+
