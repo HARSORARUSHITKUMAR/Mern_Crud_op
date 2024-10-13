@@ -14,7 +14,7 @@ const Users = () => {
 
     useEffect(() => {
         setLoading(true);
-        axios.get('https://merncrudbackend-dymi.onrender.com')
+        axios.get('https://merncrudbackend-dvjr.onrender.com')
             .then(result => {
                 setUsers(result.data);
                 setLoading(false);
@@ -26,7 +26,7 @@ const Users = () => {
     }, []);
 
     const handleDelete = (id) => {
-        axios.delete(`https://merncrudbackend-dymi.onrender.com/deleteUser/${id}`)
+        axios.delete(`https://merncrudbackend-dvjr.onrender.com/deleteUser/${id}`)
             .then(res => {
                 setUsers(prevUsers => {
                     const updatedUsers = prevUsers.filter(user => user._id !== id);
@@ -51,7 +51,7 @@ const Users = () => {
 
     const handleExport = async () => {
         try {
-            const response = await axios.get('https://merncrudbackend-dymi.onrender.com/api/exportUsers', {
+            const response = await axios.get('https://merncrudbackend-dvjr.onrender.com/api/exportUsers', {
                 responseType: 'blob', // Important for downloading files
             });
 
@@ -74,7 +74,7 @@ const Users = () => {
         formData.append('file', file);
 
         try {
-            const response = await fetch('https://merncrudbackend-dymi.onrender.com/api/importCsv', {
+            const response = await fetch('https://merncrudbackend-dvjr.onrender.com/api/importCsv', {
                 method: 'POST',
                 body: formData,
             });
@@ -132,7 +132,7 @@ const Users = () => {
                     // If valid, proceed with the import
                     handleImport(selectedFile).then(() => {
                         // Fetch updated users after import
-                        axios.get('https://merncrudbackend-dymi.onrender.com')
+                        axios.get('https://merncrudbackend-dvjr.onrender.com')
                             .then(response => {
                                 setUsers(response.data); // Update state with the latest users
                                 setSelectedFile(null);

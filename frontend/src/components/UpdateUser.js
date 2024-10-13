@@ -13,7 +13,7 @@ const UpdateUser = () => {
     const [ageError, setAgeError] = useState("");
     const [error, setError] = useState("");
     const navigate = useNavigate();
-    const URL = "https://merncrudbackend-dymi.onrender.com";
+    const URL = "https://merncrudbackend-dvjr.onrender.com";
 
     useEffect(() => {
         axios.get(`${URL}/getUser/${id}`)
