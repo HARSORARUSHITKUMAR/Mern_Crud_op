@@ -51,7 +51,7 @@ const Users = () => {
             document.body.appendChild(link);
             link.click();
             link.remove();
-            toast.success("Data exported successfully!",{autoClose: 1000,});
+            toast.success("Data exported successfully!", { autoClose: 1000, });
         } catch (error) {
             toast.error("Failed to export data.");
             // console.error('Error exporting data', error);
@@ -73,7 +73,7 @@ const Users = () => {
             }
 
             const data = await response.text();
-            toast.success("Data imported successfully!",{autoClose: 1000,});
+            toast.success("Data imported successfully!", { autoClose: 1000, });
             // console.log('Import success:', data); // Log response for debugging
             return data; // Return a success message or the data
         } catch (error) {
@@ -85,19 +85,40 @@ const Users = () => {
 
     const handleFileChange = (event) => {
         const file = event.target.files[0];
-        setSelectedFile(file);
-        // console.log('File selected:', file);
+
+        if (file) {
+            const fileExtension = file.name.split('.').pop().toLowerCase(); // Get file extension
+
+            if (fileExtension === 'csv') {
+                setSelectedFile(file);
+            } else {
+                setSelectedFile(null); // Reset the selected file
+                toast.error("Invalid file type! Please select a valid CSV file.", {
+                    autoClose: 1000, // Auto close after 2 seconds
+                });
+            }
+        }
     };
 
     const handleFileUpload = (event) => {
         event.preventDefault();
+    
         if (selectedFile) {
             Papa.parse(selectedFile, {
                 header: true,
+                skipEmptyLines: true, // This option will skip empty lines in the CSV
                 complete: function (results) {
-                    // console.log('Parsed CSV Data:', results.data);
-
-                    // Handle import and update users list
+                    const rows = results.data;
+    
+                    // Check if CSV has no rows or only one row which is empty
+                    if (rows.length === 0 || rows.every(row => Object.values(row).every(value => value === ""))) {
+                        toast.error("Please enter the correct file, not empty.", {
+                            autoClose: 2000, // Auto close after 2 seconds
+                        });
+                        return; // Stop the import process
+                    }
+    
+                    // If valid, proceed with the import
                     handleImport(selectedFile).then(() => {
                         // Fetch updated users after import
                         axios.get('https://merncrudbackend-dymi.onrender.com')
@@ -116,10 +137,12 @@ const Users = () => {
                 }
             });
         } else {
-            console.error('No file selected for import');
-            alert('Please select a file before importing.');
+            toast.error("No file selected. Please select a valid file.", {
+                autoClose: 2000,
+            });
         }
     };
+    
 
     return (
         <div className="d-flex vh-100 bg-primary justify-content-center align-items-center">
