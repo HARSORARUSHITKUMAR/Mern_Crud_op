@@ -8,10 +8,15 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.7.7",
     "bootstrap": "^5.3.3",
+    "csv-import-react": "^1.0.13",
+    "file-saver": "^2.0.5",
+    "papaparse": "^5.4.1",
     "react": "^18.3.1",
+    "react-csv-importer": "^0.8.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2",
-    "react-scripts": "5.0.1",
+    "react-scripts": "^5.0.1",
+    "react-toastify": "^10.0.5",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

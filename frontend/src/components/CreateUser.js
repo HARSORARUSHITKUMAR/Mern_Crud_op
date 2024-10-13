@@ -1,6 +1,8 @@
 import { useState } from "react";
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const CreateUser = () => {
 
@@ -12,7 +14,7 @@ const CreateUser = () => {
     const [ageError, setAgeError] = useState("");
     const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const URL = "https://merncrudbackend-1zpv.onrender.com"
+    const URL = "https://merncrudbackend-dymi.onrender.com"
 
     const handleNameChange = (e) => {
         const value = e.target.value;
@@ -84,11 +86,14 @@ const CreateUser = () => {
 
         axios.post(`${URL}/createUser`, { name, email, age })
             .then(result => {
-                console.log(result);
-                navigate('/')
+                toast.success("User added successfully!");
+                setTimeout(() => {
+                    navigate('/');
+                }, 1000);  // Delay navigation to show toast
             })
             .catch(err => { 
                 console.log(err); 
+                toast.error("Failed to add user.");
                 setIsSubmitting(false); 
             });
     }
@@ -134,6 +139,7 @@ const CreateUser = () => {
                         {isSubmitting ? 'Submitting...' : 'Submit'} {/* Show different text based on submission status */}
                     </button>
                 </form>
+                <ToastContainer />
             </div>
         </div>
     );

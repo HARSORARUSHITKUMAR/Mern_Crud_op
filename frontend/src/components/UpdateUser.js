@@ -1,17 +1,19 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const UpdateUser = () => {
 
     const { id } = useParams("");
     const [name, setName] = useState("");
-    const [email, setEmail] = useState();
+    const [email, setEmail] = useState("");
     const [age, setAge] = useState("");
     const [ageError, setAgeError] = useState("");
     const [error, setError] = useState("");
     const navigate = useNavigate();
-    const URL = "https://merncrudbackend-1zpv.onrender.com";
+    const URL = "https://merncrudbackend-dymi.onrender.com";
 
     useEffect(() => {
         axios.get(`${URL}/getUser/${id}`)
@@ -22,13 +24,13 @@ const UpdateUser = () => {
                 setAge(result.data.age || "");
             })
             .catch(err => console.error("Error fetching user:", err));
-    },[id]);
+    }, [id]);
 
     const isValidName = (name) => {
         // contains at least one space between two words, and no leading space.
         return /^[A-Za-z]+(\s[A-Za-z]+)*$/.test(name.trim()) && name.trim().length > 0;
     };
-    
+
 
     const isValidEmail = (email) => {
         const trimmedEmail = email.trim();
@@ -36,9 +38,9 @@ const UpdateUser = () => {
         const emailPattern = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
         // console.log("Validating email:", trimmedEmail); 
         return emailPattern.test(trimmedEmail);
-      };
+    };
 
-    
+
     const isValidAge = (age) => {
         return !isNaN(age) && age >= 1 && age <= 150;
     };
@@ -60,18 +62,18 @@ const UpdateUser = () => {
         // console.log("Submitting with values:", { name, email, age });
         const trimmedName = name.trim();
         const trimmedEmail = email.trim();
-     
-         if (!isValidName(trimmedName)) {
+
+        if (!isValidName(trimmedName)) {
             setError("Name must consist character cannot be a blank.");
             // console.log("Validation failed.");
             return;
         }
-        
+
         if (!isValidEmail(trimmedEmail)) {
             setError("Please enter a valid email.");
             // console.log("Invalid email:", trimmedEmail);
             return;
-          }
+        }
         // console.log("the email validation:",isValidEmail);
 
         if (!isValidAge(age)) {
@@ -79,20 +81,26 @@ const UpdateUser = () => {
             // console.log("Validation failed: Age");
             return;
         }
-        
+
         setError("");
 
-        axios.put(`${URL}/updateUser/${id}`,{ 
+        axios.put(`${URL}/updateUser/${id}`, {
             name: trimmedName,
             email: trimmedEmail,
             age: parseInt(age),
         })
-        .then(result => {
-            console.log(result);
-            // console.log("Update successful:", result.data);
-            navigate('/')
-        })
-        .catch(err => console.log(err));
+            .then(result => {
+                toast.success("User updated successfully!");
+                setTimeout(() => {
+                    navigate('/');
+                }, 1000);  // Delay navigation to show toast
+            })
+            .catch(err => {
+                toast.error("Failed to update user.");
+                console.log(err);
+            }
+            );
+
         // console.error("Error updating user:",err);
     }
 
@@ -137,6 +145,7 @@ const UpdateUser = () => {
                     </div>
                     <button className="btn btn-success" >Update</button>
                 </form>
+                <ToastContainer />
             </div>
         </div>
     );

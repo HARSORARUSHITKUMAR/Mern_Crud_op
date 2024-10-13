@@ -73,14 +73,15 @@
 //     console.log(`Server is running on port ${PORT}`);
 // });
 
-require('dotenv').config();  // Load environment variables from .env
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const UserModel = require('./models/Users');
 const multer = require('multer');
 const csvParser = require('csv-parser');
 const fs = require('fs');
-const xlsx = require('xlsx');
+// const xlsx = require('xlsx');
 const { createObjectCsvWriter } = require('csv-writer');
 const path = require('path');
 
@@ -93,15 +94,6 @@ app.use(express.json());
 
 // Multer setup for file uploads
 const upload = multer({ dest: 'uploads/' });
-
-// MongoDB User model definition
-const userSchema = new mongoose.Schema({
-    name: String,
-    email: String,
-    age: Number,
-});
-
-const UserModel = mongoose.model('User', userSchema);
 
 // Connect to MongoDB
 mongoose.connect(process.env.mongoURI, {
@@ -122,6 +114,14 @@ app.get('/', (req, res) => {
 app.post('/createUser', (req, res) => {
     UserModel.create(req.body)
         .then(newUser => res.json(newUser))
+        .catch(err => res.status(500).json(err));
+});
+
+// Route to get a user by ID
+app.get('/getUser/:id', (req, res) => {
+    const id = req.params.id;
+    UserModel.findById(id)
+        .then(user => res.json(user))
         .catch(err => res.status(500).json(err));
 });
 
@@ -198,25 +198,6 @@ app.post('/api/importCsv', upload.single('file'), (req, res) => {
                     if (err) console.error('Error deleting file:', err);
                 });
             }
-        });
-});
-
-// Route to import users from an Excel file
-app.post('/api/importExcel', upload.single('file'), (req, res) => {
-    const workbook = xlsx.readFile(req.file.path);
-    const sheetName = workbook.SheetNames[0];
-    const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
-
-    UserModel.insertMany(data)
-        .then(() => {
-            res.status(200).send('Users imported successfully from Excel');
-        })
-        .catch((error) => {
-            console.error('Error importing users from Excel:', error);
-            res.status(500).send('Error importing users from Excel');
-        })
-        .finally(() => {
-            fs.unlinkSync(req.file.path);
         });
 });
 
