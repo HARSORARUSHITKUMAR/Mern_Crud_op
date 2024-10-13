@@ -14,7 +14,7 @@ const CreateUser = () => {
     const [ageError, setAgeError] = useState("");
     const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const URL = "https://merncrudbackend-dvjr.onrender.com"
+    const URL = "https://merncrudbackend-0cmf.onrender.com"
 
     const handleNameChange = (e) => {
         const value = e.target.value;
